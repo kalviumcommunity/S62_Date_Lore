@@ -12,9 +12,6 @@ DateLore is an AI-powered historical insights tool that reveals significant worl
 - **Famous Birthdays & Deaths**  
   Discover legendary figures born or passed away on that date.
 
-- **Structured Output**  
-  Well-organized JSON-style output for easy display and integration.
-
 - **Function Calling**  
   Integrates with history APIs or databases to fetch precise data.
 
