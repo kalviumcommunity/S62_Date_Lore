@@ -4,7 +4,11 @@ import { Event } from "./models/Event.js";
 async function seed() {
   await connectDB();
 
+
+  await Event.deleteMany({}); 
+
   await Event.deleteMany({}); // clear old data
+
 
   await Event.insertMany([
     { type: "event", year: 1947, month: 8, day: 15, text: "India gained independence." },
