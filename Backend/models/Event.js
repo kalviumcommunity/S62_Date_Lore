@@ -1,7 +1,11 @@
 import mongoose from "mongoose";
 
 const EventSchema = new mongoose.Schema({
+
   type: String,   
+
+  type: String,   // event | birth | death
+
   year: Number,
   month: Number,
   day: Number,
