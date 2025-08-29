@@ -219,7 +219,9 @@ import fetch from "node-fetch";
 
 const router = Router();
 
+
 // GET /api/history?date=MM-DD
+
 router.get("/", async (req, res) => {
   const { date } = req.query;
   if (!date) {
