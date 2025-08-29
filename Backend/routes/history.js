@@ -129,7 +129,90 @@
 //   }
 // });
 
+// // export default router;
+// import { Router } from "express";
+// import { Event } from "../models/Event.js";
+// import fetch from "node-fetch";
+
+// const router = Router();
+
+// // GET /api/history?date=MM-DD
+// router.get("/", async (req, res) => {
+//   const { date } = req.query;
+//   if (!date) {
+//     return res.status(400).json({ error: "date=MM-DD required" });
+//   }
+
+//   try {
+//     // Fetch events from MongoDB
+//     const events = await Event.find({ date });
+//     if (!events || events.length === 0) {
+//       return res.status(404).json({ error: "No events found for this date" });
+//     }
+
+//     // Multi-shot prompt examples
+//     const examples = [
+//       {
+//         input: "Tell me about the event 'Moon Landing' that happened on 07-20.",
+//         output:
+//           "On July 20, 1969, Apollo 11 successfully landed the first humans on the Moon. Neil Armstrong and Buzz Aldrin became the first to walk on its surface."
+//       },
+//       {
+//         input: "Tell me about the event 'Independence Day of India' that happened on 08-15.",
+//         output:
+//           "On August 15, 1947, India gained independence from British rule, marking a historic moment celebrated annually as Independence Day."
+//       }
+//     ];
+
+//     // Create the multi-shot prompt with examples + actual request
+//     const prompt = `
+// You are a historical assistant. Below are some examples:
+
+// Example 1:
+// User: ${examples[0].input}
+// Assistant: ${examples[0].output}
+
+// Example 2:
+// User: ${examples[1].input}
+// Assistant: ${examples[1].output}
+
+// Now answer this request:
+// Tell me about the event "${events[0].title}" that happened on ${events[0].date}.
+// Description: ${events[0].description}
+//     `;
+
+//     // Call Gemini API
+//     const response = await fetch(
+//       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+//       {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json"
+//         },
+//         body: JSON.stringify({
+//           contents: [{ parts: [{ text: prompt }] }]
+//         })
+//       }
+//     );
+
+//     const data = await response.json();
+//     const aiMessage = data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from AI";
+
+//     res.json({
+//       date,
+//       events,
+//       aiSummary: aiMessage
+//     });
+//   } catch (err) {
+//     console.error("Error in /api/history:", err);
+//     res.status(500).json({ error: "Internal Server Error" });
+//   }
+// });
+
 // export default router;
+
+
+
 import { Router } from "express";
 import { Event } from "../models/Event.js";
 import fetch from "node-fetch";
@@ -179,9 +262,11 @@ Assistant: ${examples[1].output}
 Now answer this request:
 Tell me about the event "${events[0].title}" that happened on ${events[0].date}.
 Description: ${events[0].description}
+
+End your response with "###"
     `;
 
-    // Call Gemini API
+    // Call Gemini API with stop sequence
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
@@ -190,13 +275,21 @@ Description: ${events[0].description}
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            stopSequences: ["###"], // 👈 AI will stop here
+            maxOutputTokens: 200
+          }
         })
       }
     );
 
     const data = await response.json();
-    const aiMessage = data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from AI";
+    let aiMessage =
+      data?.candidates?.[0]?.content?.parts?.[0]?.text || "No response from AI";
+
+    // Clean stop sequence from response
+    aiMessage = aiMessage.replace(/###$/, "").trim();
 
     res.json({
       date,
