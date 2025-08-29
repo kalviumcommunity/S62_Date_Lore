@@ -3,6 +3,7 @@ import { Event } from "../models/Event.js";
 
 const router = Router();
 
+
 router.get("/", async (req, res) => {
   const { date } = req.query;
   if (!date) return res.status(400).json({ error: "date=MM-DD required" });
